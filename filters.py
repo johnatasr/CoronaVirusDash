@@ -28,14 +28,18 @@ def get_all_countries():
     response = api.getCountries()
     df = json_normalize(response)
 
-    list_countries = []
-    for country in df.values:
-        data = {
-            country[1]: country[0]
-        }
-        list_countries.append(data)
+    # list_countries = []
+    # for country in df.values:
+    #     data = {
+    #         country[1]: country[0]
+    #     }
+    #     list_countries.append(data)
 
-    return list_countries
+    dict_countries = {}
+    for country in df.values:
+        dict_countries[country[1]] = country[0]
+
+    return dict_countries
 
 
 # Row 1 | Col 2 | Sub-Row 1

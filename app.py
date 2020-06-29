@@ -10,11 +10,11 @@ from dash.dependencies import Input, Output, State, ClientsideFunction
 import dash_core_components as dcc
 import dash_html_components as html
 from api import Api
-from filters import get_all_countries
+from filters import get_all_countries, list_all_statuses
 
 # Multi-dropdown options
 from controls import COUNTIES, STATUSES, WELL_TYPES, WELL_COLORS
-from filters import list_all_statuses
+
 
 # get relative data folder
 PATH = pathlib.Path(__file__).parent
@@ -37,23 +37,18 @@ server = app.server
 # points = pickle.load(open(DATA_PATH.joinpath("points.pkl"), "rb"))
 
 COUTRIES = get_all_countries()
-
+ALL_STATUSES = list_all_statuses()
 
 # Create controls
 countries_options = [
     {"label": str(COUTRIES[country]), "value": str(country)} for country in COUTRIES
 ]
 
-well_status_options = [
-    {"label": str(STATUSES[status]), "value": str(status)}
-    for status in STATUSES
-]
 
 well_type_options = [
     {"label": str(WELL_TYPES[well_type]), "value": str(well_type)}
     for well_type in WELL_TYPES
 ]
-
 
 
 
@@ -159,9 +154,9 @@ app.layout = html.Div(
                         ),
                         dcc.Dropdown(
                             id="well_statuses",
-                            options=countries_options,
+                            options=ALL_STATUSES,
                             multi=True,
-                            value=list(COUTRIES.keys()),
+                            value=list(),
                             className="dcc_control",
                         ),
                         dcc.Checklist(
@@ -183,9 +178,9 @@ app.layout = html.Div(
                         ),
                         dcc.Dropdown(
                             id="well_types",
-                            options=well_type_options,
+                            options=countries_options,
                             multi=True,
-                            value=list(WELL_TYPES.keys()),
+                            value=list(COUTRIES.keys()),
                             className="dcc_control",
                         ),
                     ],
