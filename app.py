@@ -1,5 +1,6 @@
 # Import required libraries
 import pickle
+import time
 import copy
 import pathlib
 import dash
@@ -50,7 +51,7 @@ well_type_options = [
     for well_type in WELL_TYPES
 ]
 
-
+MAX_DATE = int(time.mktime(dt.datetime.now().timetuple()))
 
 # Create global chart template
 mapbox_access_token = "pk.eyJ1Ijoiam9obmF0YXNyIiwiYSI6ImNrYmZra3g1dTB3cW4yeW9pNWpvaWg3N2YifQ.84Jwq_Em8kh4_hEzmgcFIA"
@@ -136,14 +137,14 @@ app.layout = html.Div(
                         ),
                         dcc.RangeSlider(
                             id="year_slider",
-                            min=dt.datetime(2020, 1, 1),
-                            max=dt.datetime.now(),
-                            value=[dt.datetime(2020, 3, 1), dt.datetime(2020, 3, 30)],
+                            min=1577847600,
+                            max=MAX_DATE,
+                            value=[1577847600, MAX_DATE],
                             className="dcc_control",
                         ),
                         html.P("Filtre pelo status:", className="control_label"),
                         dcc.RadioItems(
-                            id="well_status_selector",
+                            id="status_selector",
                             options=[
                                 {"label": "Todos ", "value": "all"},
                                 {"label": "Custom ", "value": "custom"},
@@ -366,32 +367,30 @@ def update_production_text(well_statuses, well_types, year_slider):
 
 # Radio -> multi
 @app.callback(
-    Output("well_statuses", "value"), [Input("well_status_selector", "value")]
+    Output("well_statuses", "value"), [Input("status_selector", "value")]
 )
 def display_status(selector):
     if selector == "all":
-        return list(WELL_STATUSES.keys())
-    elif selector == "active":
-        return ["AC"]
+        return list(ALL_STATUSES)
     return []
 
 
 # Radio -> multi
 @app.callback(Output("well_types", "value"), [Input("well_type_selector", "value")])
-def display_type(selector):
+def display_countries(selector):
     if selector == "all":
-        return list(WELL_TYPES.keys())
-    elif selector == "productive":
-        return ["GD", "GE", "GW", "IG", "IW", "OD", "OE", "OW"]
+        return list(COUTRIES.keys())
     return []
 
 
 # Slider -> count graph
 @app.callback(Output("year_slider", "value"), [Input("count_graph", "selectedData")])
-def update_year_slider(count_graph_selected):
+def update_date_slider(count_graph_selected):
+    now_timestamp = int(time.mktime(dt.datetime.now().timetuple()))
+    begin = int(time.mktime(dt.datetime(2020, 1, 1).timetuple()))
 
     if count_graph_selected is None:
-        return [1990, 2010]
+        return [begin, now_timestamp]
 
     nums = [int(point["pointNumber"]) for point in count_graph_selected["points"]]
     return [min(nums) + 1960, max(nums) + 1961]
@@ -406,7 +405,7 @@ def update_year_slider(count_graph_selected):
         Input("year_slider", "value"),
     ],
 )
-def update_well_text(well_statuses, well_types, year_slider):
+def update_well_text(statuses, coutries, date_slider):
 
     dff = filter_dataframe(df, well_statuses, well_types, year_slider)
     return dff.shape[0]
